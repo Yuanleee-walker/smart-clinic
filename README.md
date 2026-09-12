@@ -90,6 +90,7 @@ smart-clinic/
 ## 相关项目
 
 [Smart Health Monitor](https://github.com/Yuanleee-walker/smart-health-monitor) - 公共卫生监测大屏
+##（！！所有机构，地点，患者，医生均为虚构。如有相似，纯属雷同！！）
 
 ## License
 
