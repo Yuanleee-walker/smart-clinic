@@ -1,0 +1,59 @@
+﻿{% extends "base.html" %}
+{% block title %}门诊就诊{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="mb-0"><i class="bi bi-clipboard2-pulse me-2"></i>门诊就诊</h4>
+    <a href="/visit/new" class="btn btn-primary"><i class="bi bi-plus-circle me-1"></i>新建就诊</a>
+</div>
+
+{% if waiting_list %}
+<div class="card shadow-sm border-0 mb-4" style="background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%);">
+    <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="mb-0"><i class="bi bi-people-fill text-warning me-2"></i>今日候诊队列 <span class="badge bg-warning text-dark ms-2">{{waiting_list|length}}人</span></h5>
+            <small class="text-muted">按挂号时间排序</small>
+        </div>
+        <div class="row g-3">
+            {% for w in waiting_list %}
+            <div class="col-md-6 col-lg-4">
+                <div class="card border-0 shadow-sm h-100" style="transition: transform 0.2s; cursor: pointer;" onclick="location.href='/visit/new?visit_id={{w.id}}'">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div>
+                                <h6 class="mb-1"><strong>#{{w.id}}</strong> {{w.patient_name}}</h6>
+                                <small class="text-muted"><i class="bi bi-hospital me-1"></i>{{w.department}}</small>
+                                {% if w.doctor_name %}<small class="text-muted ms-2"><i class="bi bi-person me-1"></i>{{w.doctor_name}}</small>{% endif %}
+                            </div>
+                            <div class="text-end">
+                                <div class="badge {% if w.wait_time > 60 %}bg-danger{% elif w.wait_time > 30 %}bg-warning text-dark{% else %}bg-success{% endif %}" style="font-size: 0.85rem;">
+                                    {% if w.wait_time < 60 %}{{w.wait_time}}分钟{% else %}{{ (w.wait_time / 60) | int }}小时{{ w.wait_time % 60 }}分{% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mt-2 pt-2 border-top">
+                            <small class="text-muted"><i class="bi bi-clock me-1"></i>等待中</small>
+                            <button class="btn btn-sm btn-outline-primary">接诊 <i class="bi bi-arrow-right"></i></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<ul class="nav nav-pills mb-3">
+    <li class="nav-item"><a class="nav-link {% if current_status=='all'%}active{%endif%}" href="/visit">全部</a></li>
+    <li class="nav-item"><a class="nav-link {% if current_status=='就诊中'%}active{%endif%}" href="/visit?status=就诊中">就诊中</a></li>
+    <li class="nav-item"><a class="nav-link {% if current_status=='已完成'%}active{%endif%}" href="/visit?status=已完成">已完成</a></li>
+</ul>
+<div class="card shadow-sm border-0"><div class="card-body p-0"><div class="table-responsive"><table class="table table-hover mb-0">
+    <thead class="table-light"><tr><th>就诊号</th><th>患者</th><th>科室</th><th>医生</th><th>主诉</th><th>诊断</th><th>状态</th><th>就诊时间</th><th>操作</th></tr></thead>
+    <tbody>
+    {% for v in visits %}
+    <tr><td>#{{v.id}}</td><td><strong>{{v.patient.name}}</strong></td><td>{{v.department}}</td><td>{{v.doctor_name or '-'}}</td><td>{{v.chief_complaint[:20] if v.chief_complaint else '-'}}</td><td>{{v.diagnosis or '-'}}</td><td><span class="badge {% if v.status=='就诊中'%}bg-warning text-dark{%else%}bg-success{%endif%}">{{v.status}}</span></td><td>{{v.visit_date.strftime('%m-%d %H:%M')}}</td><td><a href="/visit/{{v.id}}" class="btn btn-sm btn-outline-primary">详情</a></td></tr>
+    {% else %}<tr><td colspan="9" class="text-center text-muted py-4">暂无就诊记录</td></tr>{% endfor %}
+    </tbody>
+</table></div></div></div>
+{% endblock %}

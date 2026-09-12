@@ -1,0 +1,99 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>处方单 - {{visit.patient.name}}</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: "Microsoft YaHei", "SimSun", serif; padding: 40px; color: #333; }
+        .header { text-align: center; border-bottom: 2px solid #333; padding-bottom: 15px; margin-bottom: 20px; }
+        .header h1 { font-size: 24px; letter-spacing: 8px; }
+        .header .subtitle { font-size: 12px; color: #666; margin-top: 5px; }
+        .info-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 14px; }
+        .info-table td { padding: 6px 10px; }
+        .info-table .label { color: #666; width: 80px; }
+        .rx-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+        .rx-table th, .rx-table td { border: 1px solid #333; padding: 8px 10px; text-align: left; }
+        .rx-table th { background: #f5f5f5; }
+        .footer { margin-top: 40px; font-size: 13px; color: #666; }
+        .footer .sig-row { display: flex; justify-content: space-between; margin-top: 30px; }
+        .note { margin-top: 20px; padding: 10px; border: 1px dashed #999; font-size: 12px; color: #666; }
+        .diagnosis-box { border: 1px solid #333; padding: 10px; margin: 15px 0; font-size: 14px; }
+        @media print {
+            body { padding: 20px; }
+            .no-print { display: none !important; }
+        }
+        .print-bar { text-align: center; margin-bottom: 20px; padding: 15px; background: #f0f8ff; border-radius: 8px; }
+        .print-bar button { padding: 10px 30px; font-size: 16px; cursor: pointer; background: #0d6efd; color: #fff; border: none; border-radius: 6px; margin: 0 10px; }
+        .print-bar button.secondary { background: #6c757d; }
+    </style>
+</head>
+<body>
+    <div class="print-bar no-print">
+        <button onclick="window.print()"><i>🖨️</i> 打印处方</button>
+        <button class="secondary" onclick="window.close()">返回</button>
+    </div>
+
+    <div class="header">
+        <h1>处 方 单</h1>
+        <div class="subtitle">PRESCRIPTION</div>
+    </div>
+
+    <table class="info-table">
+        <tr>
+            <td class="label">患者姓名：</td><td><strong>{{visit.patient.name}}</strong></td>
+            <td class="label">性别/年龄：</td><td>{{visit.patient.gender}} / {{visit.patient.age}}岁</td>
+        </tr>
+        <tr>
+            <td class="label">就诊科室：</td><td>{{visit.department}}</td>
+            <td class="label">就诊时间：</td><td>{{visit.visit_date.strftime('%Y-%m-%d %H:%M')}}</td>
+        </tr>
+        <tr>
+            <td class="label">过敏史：</td><td colspan="3">{% if visit.patient.allergy_history %}<span style="color:red;font-weight:bold">{{visit.patient.allergy_history}}</span>{% else %}无{% endif %}</td>
+        </tr>
+    </table>
+
+    <div class="diagnosis-box">
+        <strong>诊断：</strong>{{visit.diagnosis or '待定'}}
+        {% if visit.diagnosis_icd10 %} &nbsp; [ICD-10: {{visit.diagnosis_icd10}}]{% endif %}
+    </div>
+
+    <table class="rx-table">
+        <thead>
+            <tr><th style="width:40px">序号</th><th>药品名称</th><th>剂量</th><th>用法</th><th>数量</th><th>备注</th></tr>
+        </thead>
+        <tbody>
+        {% for rx in visit.prescriptions %}
+        <tr>
+            <td style="text-align:center">{{loop.index}}</td>
+            <td><strong>{{rx.drug_name}}</strong></td>
+            <td>{{rx.dosage}}</td>
+            <td>{{rx.frequency}}</td>
+            <td>{{rx.quantity}}</td>
+            <td>{{rx.remarks or '-'}}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="6" style="text-align:center;color:#999">暂无处方</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="footer">
+        <div class="sig-row">
+            <span>医师签名：_______________</span>
+            <span>药师审核：_______________</span>
+            <span>日期：{{visit.visit_date.strftime('%Y年%m月%d日')}}</span>
+        </div>
+    </div>
+
+    <div class="note">
+        <strong>注意事项：</strong><br>
+        1. 请严格按医嘱服药，不可自行增减剂量。<br>
+        2. 服药期间如出现不适，请及时就医。<br>
+        3. 请将药品存放在儿童不易触及处。<br>
+        4. 本处方仅供当次就诊使用。
+    </div>
+
+    <script>window.onload = function(){ if(window.location.search.indexOf('auto=1')>-1) window.print(); };</script>
+</body>
+</html>

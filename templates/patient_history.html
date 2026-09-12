@@ -1,0 +1,55 @@
+﻿{% extends "base.html" %}
+{% block title %}就诊历史 - {{patient.name}}{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="mb-0"><i class="bi bi-clock-history me-2"></i>就诊历史 - {{patient.name}}</h4>
+    <a href="/patients" class="btn btn-outline-secondary"><i class="bi bi-arrow-left me-1"></i>返回患者列表</a>
+</div>
+<div class="row g-4">
+<div class="col-md-4">
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-white fw-bold"><i class="bi bi-person me-2"></i>患者信息</div>
+        <div class="card-body">
+            <table class="table table-borderless mb-0">
+                <tr><td class="text-muted" style="width:80px">姓名</td><td><strong>{{patient.name}}</strong></td></tr>
+                <tr><td class="text-muted">性别</td><td>{{patient.gender}}</td></tr>
+                <tr><td class="text-muted">年龄</td><td>{{patient.age}}岁</td></tr>
+                <tr><td class="text-muted">电话</td><td>{{patient.phone or '-'}}</td></tr>
+                <tr><td class="text-muted">过敏史</td><td>{% if patient.allergy_history %}<span class="badge bg-danger">{{patient.allergy_history}}</span>{% else %}无{% endif %}</td></tr>
+                <tr><td class="text-muted">建档时间</td><td>{{patient.created_at.strftime('%Y-%m-%d')}}</td></tr>
+                <tr><td class="text-muted">就诊次数</td><td>{{visits|length}}</td></tr>
+            </table>
+        </div>
+    </div>
+</div>
+<div class="col-md-8">
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-white fw-bold"><i class="bi bi-list-ul me-2"></i>历次就诊记录</div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr><th>就诊号</th><th>就诊时间</th><th>科室</th><th>主诉</th><th>诊断</th><th>状态</th><th>操作</th></tr>
+                    </thead>
+                    <tbody>
+                    {% for v in visits %}
+                    <tr>
+                        <td>#{{v.id}}</td>
+                        <td>{{v.visit_date.strftime('%Y-%m-%d %H:%M')}}</td>
+                        <td>{{v.department}}</td>
+                        <td>{{v.chief_complaint[:20] if v.chief_complaint else '-'}}</td>
+                        <td>{{v.diagnosis or '-'}}</td>
+                        <td><span class="badge {% if v.status=='就诊中'%}bg-warning text-dark{%else%}bg-success{%endif%}">{{v.status}}</span></td>
+                        <td><a href="/visit/{{v.id}}" class="btn btn-sm btn-outline-primary">详情</a></td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="7" class="text-center text-muted py-4">暂无就诊记录</td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+{% endblock %}

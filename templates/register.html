@@ -1,0 +1,348 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>预约挂号 - {{hospital.name}}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-light: #dbeafe;
+            --success: #16a34a;
+            --bg: #f8fafc;
+            --card: #ffffff;
+            --text: #1e293b;
+            --muted: #64748b;
+            --border: #e2e8f0;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { background: var(--bg); color: var(--text); font-family: -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif; min-height: 100vh; max-width: 480px; margin: 0 auto; }
+
+        /* Header */
+        .app-header {
+            background: linear-gradient(135deg, var(--primary), #1d4ed8);
+            color: #fff; padding: 20px 16px 16px; position: sticky; top: 0; z-index: 100;
+        }
+        .app-header .hospital-name { font-size: 1.1rem; font-weight: 600; }
+        .app-header .hospital-addr { font-size: 0.75rem; opacity: 0.8; margin-top: 2px; }
+        .app-header .back-btn { position: absolute; right: 16px; top: 20px; color: #fff; text-decoration: none; font-size: 0.85rem; }
+
+        /* Steps */
+        .steps { display: flex; gap: 4px; padding: 12px 16px; background: #fff; border-bottom: 1px solid var(--border); }
+        .step-item { flex: 1; text-align: center; }
+        .step-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border); margin: 0 auto 4px; transition: all 0.3s; }
+        .step-item.active .step-dot { background: var(--primary); width: 24px; border-radius: 4px; }
+        .step-item.done .step-dot { background: var(--success); }
+        .step-label { font-size: 0.65rem; color: var(--muted); }
+        .step-item.active .step-label { color: var(--primary); font-weight: 600; }
+
+        /* Content */
+        .page-content { padding: 16px; }
+        .section-title { font-size: 1rem; font-weight: 600; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+        .section-title i { color: var(--primary); }
+
+        /* Cards */
+        .option-card {
+            background: var(--card); border: 2px solid var(--border); border-radius: 12px;
+            padding: 16px; margin-bottom: 10px; cursor: pointer; transition: all 0.2s;
+            display: flex; align-items: center; gap: 12px;
+        }
+        .option-card:active { transform: scale(0.98); }
+        .option-card.selected { border-color: var(--primary); background: var(--primary-light); }
+        .option-card .icon { width: 44px; height: 44px; border-radius: 10px; background: var(--primary-light); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; color: var(--primary); flex-shrink: 0; }
+        .option-card.selected .icon { background: var(--primary); color: #fff; }
+        .option-card .info { flex: 1; }
+        .option-card .info .name { font-weight: 600; font-size: 0.95rem; }
+        .option-card .info .desc { font-size: 0.8rem; color: var(--muted); margin-top: 2px; }
+        .option-card .arrow { color: var(--muted); font-size: 1.2rem; }
+
+        /* Form */
+        .form-group { margin-bottom: 16px; }
+        .form-group label { font-size: 0.85rem; font-weight: 500; color: var(--text); margin-bottom: 6px; display: block; }
+        .form-group input, .form-group select {
+            width: 100%; padding: 12px 14px; border: 2px solid var(--border); border-radius: 10px;
+            font-size: 1rem; background: #fff; transition: border-color 0.2s;
+            -webkit-appearance: none; appearance: none;
+        }
+        .form-group input:focus, .form-group select:focus { outline: none; border-color: var(--primary); }
+        .form-group select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2364748b' d='M6 8L1 3h10z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; padding-right: 36px; }
+
+        .gender-group { display: flex; gap: 10px; }
+        .gender-btn { flex: 1; padding: 12px; border: 2px solid var(--border); border-radius: 10px; text-align: center; font-size: 1rem; font-weight: 500; cursor: pointer; transition: all 0.2s; background: #fff; }
+        .gender-btn.selected { border-color: var(--primary); background: var(--primary-light); color: var(--primary); }
+
+        /* Buttons */
+        .btn-primary-lg {
+            width: 100%; padding: 14px; border: none; border-radius: 12px;
+            background: linear-gradient(135deg, var(--primary), #1d4ed8); color: #fff;
+            font-size: 1rem; font-weight: 600; cursor: pointer; transition: all 0.2s;
+            margin-top: 8px;
+        }
+        .btn-primary-lg:active { transform: scale(0.98); opacity: 0.9; }
+        .btn-primary-lg:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn-back {
+            width: 100%; padding: 12px; border: 2px solid var(--border); border-radius: 12px;
+            background: #fff; color: var(--text); font-size: 0.9rem; font-weight: 500;
+            cursor: pointer; margin-top: 8px;
+        }
+
+        /* Success */
+        .success-card { text-align: center; padding: 40px 20px; }
+        .success-icon { font-size: 4rem; color: var(--success); margin-bottom: 16px; }
+        .success-title { font-size: 1.3rem; font-weight: 700; margin-bottom: 8px; }
+        .success-info { background: #f0fdf4; border-radius: 12px; padding: 20px; margin: 20px 0; text-align: left; }
+        .success-info .row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #dcfce7; }
+        .success-info .row:last-child { border-bottom: none; }
+        .success-info .label { color: var(--muted); font-size: 0.85rem; }
+        .success-info .value { font-weight: 600; font-size: 0.9rem; }
+        .queue-number { font-size: 2.5rem; font-weight: 800; color: var(--primary); margin: 12px 0; }
+
+        /* Hidden */
+        .step-page { display: none; }
+        .step-page.active { display: block; animation: fadeIn 0.3s; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Doctor card extra */
+        .doctor-title { display: inline-block; background: #fef3c7; color: #92400e; font-size: 0.7rem; padding: 2px 8px; border-radius: 4px; margin-left: 6px; }
+    </style>
+</head>
+<body>
+
+<div class="app-header">
+    <div class="hospital-name"><i class="bi bi-hospital-fill me-2"></i>{{hospital.name}}</div>
+    <div class="hospital-addr"><i class="bi bi-geo-alt me-1"></i>{{hospital.address}}</div>
+</div>
+
+<div class="steps" id="stepsBar">
+    <div class="step-item active" data-step="0"><div class="step-dot"></div><div class="step-label">选择医院</div></div>
+    <div class="step-item" data-step="1"><div class="step-dot"></div><div class="step-label">选择科室</div></div>
+    <div class="step-item" data-step="2"><div class="step-dot"></div><div class="step-label">选择医生</div></div>
+    <div class="step-item" data-step="3"><div class="step-dot"></div><div class="step-label">填写信息</div></div>
+    <div class="step-item" data-step="4"><div class="step-dot"></div><div class="step-label">确认挂号</div></div>
+</div>
+
+<div class="page-content">
+    <!-- Step 0: Hospital -->
+    <div class="step-page active" id="step0">
+        <div class="section-title"><i class="bi bi-hospital-fill"></i>选择就诊医院</div>
+        <div id="hospitalList">
+            <div class="option-card" onclick="selectHospital()">
+                <div class="icon"><i class="bi bi-hospital-fill"></i></div>
+                <div class="info">
+                    <div class="name">{{hospital.name}}</div>
+                    <div class="desc"><i class="bi bi-geo-alt me-1"></i>{{hospital.address}}</div>
+                </div>
+                <i class="bi bi-chevron-right arrow"></i>
+            </div>
+            <div class="option-card" style="opacity:0.5;cursor:not-allowed">
+                <div class="icon" style="background:#f1f5f9"><i class="bi bi-hospital" style="color:#94a3b8"></i></div>
+                <div class="info">
+                    <div class="name" style="color:#94a3b8">南方医科大学附属第一医院</div>
+                    <div class="desc">即将接入</div>
+                </div>
+                <span class="badge bg-secondary">未开通</span>
+            </div>
+            <div class="option-card" style="opacity:0.5;cursor:not-allowed">
+                <div class="icon" style="background:#f1f5f9"><i class="bi bi-hospital" style="color:#94a3b8"></i></div>
+                <div class="info">
+                    <div class="name" style="color:#94a3b8">市中心人民医院</div>
+                    <div class="desc">即将接入</div>
+                </div>
+                <span class="badge bg-secondary">未开通</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Step 1: Department -->
+    <div class="step-page" id="step1">
+        <div class="section-title"><i class="bi bi-grid-3x3-gap-fill"></i>选择就诊科室</div>
+        <div id="deptList"></div>
+        <button class="btn-back" onclick="goStep(0)"><i class="bi bi-arrow-left me-1"></i>返回选择医院</button>
+    </div>
+
+    <!-- Step 2: Doctor -->
+    <div class="step-page" id="step2">
+        <div class="section-title"><i class="bi bi-person-badge"></i>选择医生 <small class="text-muted fw-normal" id="deptLabel"></small></div>
+        <div id="doctorList"></div>
+        <button class="btn-back" onclick="goStep(1)"><i class="bi bi-arrow-left me-1"></i>返回选择科室</button>
+    </div>
+
+    <!-- Step 3: Patient Info -->
+    <div class="step-page" id="step3">
+        <div class="section-title"><i class="bi bi-person-vcard"></i>填写患者信息</div>
+        <div class="form-group">
+            <label>姓名 *</label>
+            <input type="text" id="patientName" placeholder="请输入真实姓名">
+        </div>
+        <div class="form-group">
+            <label>性别 *</label>
+            <div class="gender-group">
+                <div class="gender-btn selected" data-gender="男" onclick="selectGender(this)"><i class="bi bi-gender-male me-1"></i>男</div>
+                <div class="gender-btn" data-gender="女" onclick="selectGender(this)"><i class="bi bi-gender-female me-1"></i>女</div>
+            </div>
+        </div>
+        <div class="form-group">
+            <label>年龄 *</label>
+            <input type="number" id="patientAge" placeholder="请输入年龄" min="0" max="150">
+        </div>
+        <div class="form-group">
+            <label>手机号</label>
+            <input type="tel" id="patientPhone" placeholder="用于接收就诊通知（选填）">
+        </div>
+        <button class="btn-primary-lg" onclick="goStep(4)">下一步</button>
+        <button class="btn-back" onclick="goStep(2)"><i class="bi bi-arrow-left me-1"></i>返回选择医生</button>
+    </div>
+
+    <!-- Step 4: Confirm -->
+    <div class="step-page" id="step4">
+        <div class="section-title"><i class="bi bi-check2-circle"></i>确认挂号信息</div>
+        <div class="success-info" id="confirmInfo"></div>
+        <button class="btn-primary-lg" id="submitBtn" onclick="submitRegister()"><i class="bi bi-check-circle me-2"></i>确认挂号</button>
+        <button class="btn-back" onclick="goStep(3)"><i class="bi bi-arrow-left me-1"></i>修改信息</button>
+    </div>
+
+    <!-- Step 5: Success -->
+    <div class="step-page" id="step5">
+        <div class="success-card">
+            <div class="success-icon"><i class="bi bi-check-circle-fill"></i></div>
+            <div class="success-title">挂号成功！</div>
+            <p class="text-muted">请前往对应科室候诊区等待叫号</p>
+            <div class="queue-number" id="queueNumber"></div>
+            <div class="success-info" id="successInfo"></div>
+            <a href="/" class="btn-primary-lg d-block text-center text-decoration-none mt-3">返回首页</a>
+        </div>
+    </div>
+</div>
+
+<script>
+const hospital = {{ hospital | tojson }};
+let currentStep = 0;
+let selectedDept = '';
+let selectedDoctor = '';
+let selectedTitle = '';
+let selectedGender = '男';
+
+// Department icons
+const deptIcons = {
+    '全科': 'bi-house-heart', '呼吸内科': 'bi-lungs', '消化内科': 'bi-droplet-half',
+    '心血管内科': 'bi-heart-pulse', '内分泌科': 'bi-activity', '神经内科': 'bi-lightning',
+    '骨科': 'bi-bandaid', '耳鼻喉科': 'bi-ear', '眼科': 'bi-eye',
+    '皮肤科': 'bi-stars', '泌尿外科': 'bi-droplet', '风湿免疫科': 'bi-shield-check', '血液科': 'bi-droplet-fill'
+};
+
+// Init departments
+function initDepts() {
+    const list = document.getElementById('deptList');
+    Object.keys(hospital.departments).forEach(dept => {
+        const count = hospital.departments[dept].length;
+        const icon = deptIcons[dept] || 'bi-hospital';
+        list.innerHTML += `<div class="option-card" onclick="selectDept('${dept}')"><div class="icon"><i class="bi ${icon}"></i></div><div class="info"><div class="name">${dept}</div><div class="desc">${count}位医生</div></div><i class="bi bi-chevron-right arrow"></i></div>`;
+    });
+}
+
+function selectHospital() { goStep(1); }
+
+function selectDept(dept) {
+    selectedDept = dept;
+    loadDoctors(dept);
+    goStep(2);
+}
+
+function loadDoctors(dept) {
+    const list = document.getElementById('doctorList');
+    list.innerHTML = '';
+    document.getElementById('deptLabel').textContent = '- ' + dept;
+    const doctors = hospital.departments[dept] || [];
+    doctors.forEach(doc => {
+        list.innerHTML += `<div class="option-card" onclick="selectDoctor('${doc.name}','${doc.title}')"><div class="icon"><i class="bi bi-person-badge"></i></div><div class="info"><div class="name">${doc.name}<span class="doctor-title">${doc.title}</span></div></div><i class="bi bi-chevron-right arrow"></i></div>`;
+    });
+}
+
+function selectDoctor(name, title) {
+    selectedDoctor = name;
+    selectedTitle = title;
+    goStep(3);
+}
+
+function selectGender(el) {
+    document.querySelectorAll('.gender-btn').forEach(b => b.classList.remove('selected'));
+    el.classList.add('selected');
+    selectedGender = el.dataset.gender;
+}
+
+function goStep(step) {
+    if (step === 4) {
+        const name = document.getElementById('patientName').value.trim();
+        const age = document.getElementById('patientAge').value;
+        if (!name) { alert('请输入姓名'); return; }
+        if (!age || age < 1) { alert('请输入有效年龄'); return; }
+        showConfirm();
+    }
+    currentStep = step;
+    document.querySelectorAll('.step-page').forEach(p => p.classList.remove('active'));
+    document.getElementById('step' + step).classList.add('active');
+    document.querySelectorAll('.step-item').forEach((s, i) => {
+        s.classList.remove('active', 'done');
+        if (i < step) s.classList.add('done');
+        if (i === step) s.classList.add('active');
+    });
+    window.scrollTo(0, 0);
+}
+
+function showConfirm() {
+    const name = document.getElementById('patientName').value.trim();
+    const age = document.getElementById('patientAge').value;
+    const phone = document.getElementById('patientPhone').value.trim();
+    document.getElementById('confirmInfo').innerHTML = `
+        <div class="row"><span class="label">医院</span><span class="value">${hospital.name}</span></div>
+        <div class="row"><span class="label">科室</span><span class="value">${selectedDept}</span></div>
+        <div class="row"><span class="label">医生</span><span class="value">${selectedDoctor}（${selectedTitle}）</span></div>
+        <div class="row"><span class="label">患者</span><span class="value">${name}</span></div>
+        <div class="row"><span class="label">性别 / 年龄</span><span class="value">${selectedGender} / ${age}岁</span></div>
+        ${phone ? '<div class="row"><span class="label">手机号</span><span class="value">' + phone + '</span></div>' : ''}
+    `;
+}
+
+function submitRegister() {
+    const btn = document.getElementById('submitBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>提交中...';
+
+    const data = {
+        name: document.getElementById('patientName').value.trim(),
+        gender: selectedGender,
+        age: document.getElementById('patientAge').value,
+        phone: document.getElementById('patientPhone').value.trim(),
+        department: selectedDept,
+        doctor_name: selectedDoctor
+    };
+
+    fetch('/patient/register', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(data)
+    }).then(r => r.json()).then(res => {
+        if (res.success) {
+            document.getElementById('queueNumber').textContent = '#' + res.visit_id;
+            document.getElementById('successInfo').innerHTML = `
+                <div class="row"><span class="label">科室</span><span class="value">${res.department}</span></div>
+                <div class="row"><span class="label">医生</span><span class="value">${res.doctor_name}</span></div>
+                <div class="row"><span class="label">患者</span><span class="value">${res.patient_name}</span></div>
+            `;
+            document.querySelectorAll('.step-item').forEach(s => s.classList.add('done'));
+            document.querySelectorAll('.step-page').forEach(p => p.classList.remove('active'));
+            document.getElementById('step5').classList.add('active');
+        } else {
+            alert('挂号失败，请重试');
+            btn.disabled = false;
+            btn.innerHTML = '<i class="bi bi-check-circle me-2"></i>确认挂号';
+        }
+    });
+}
+
+initDepts();
+</script>
+</body>
+</html>
